@@ -1,4 +1,0 @@
-0ad5cbb84529d924ac07525f160f6146f6c3d144b77f9332c108e4a41509644b  talenesia-config_0.0.1-next_linux_arm64.tar.gz
-2152b403cb09c91f6f4661911952707d1cebe5c11cd017d4420b300ea2a35543  talenesia-config_0.0.1-next_linux_armv6.tar.gz
-c81ce0253df489bdbd34f0775b3d183a218eeb840aa3c7120d505c6872c6aa11  talenesia-config_0.0.1-next_linux_armv7.tar.gz
-c23fe8dbed2e4a84ded7b0e90cafa2aba0c6e5c338c1bb42b959cfd8fce8bbd7  talenesia-config_0.0.1-next_linux_x86_64.tar.gz

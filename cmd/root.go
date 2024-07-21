@@ -24,7 +24,7 @@ func New() *Root {
 	}
 
 	r.Cmd.AddCommand(r.EnvCmd())
-
+	r.Cmd.AddCommand(r.ReleaseCmd())
 	return r
 }
 

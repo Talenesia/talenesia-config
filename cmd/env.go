@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log/slog"
+	"os/exec"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -20,6 +21,15 @@ func (r *Root) EnvCmd() *cobra.Command {
 	cmd.PersistentFlags().String("dest", "", "Environment Destination Paths (.env)")
 
 	return cmd
+}
+
+func (r *Root) EnvCommandList() []string {
+	return []string{
+		"age -d .env.age > .env",
+		"apply env",
+		"copy to talenesia web",
+		"age -p .env > .env.age",
+	}
 }
 
 func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
@@ -41,6 +51,9 @@ func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	exec := exec.Command("/bin/sh", "-c", "age -d .env.age > .env")
+	exec.Stdin = strings.NewReader("yudha123")
+
 	envs := strings.Split(envsFlag, ",")
 
 	filteredEnvs := make(map[string]string)
@@ -58,10 +71,7 @@ func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
 	}
 
 	for key, env := range filteredEnvs {
-		if val, exist := envMap[key]; exist {
-			slog.Info("Update Env", "Before", val, "After", env)
-			envMap[key] = env
-		}
+		envMap[key] = env
 	}
 
 	err = godotenv.Write(envMap, envDest)

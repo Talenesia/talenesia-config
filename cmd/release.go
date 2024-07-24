@@ -43,6 +43,8 @@ func (r *Root) ReleaseCommandList() []string {
 		`sudo composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev`,
 		`sudo php artisan migrate --force`,
 		`sudo php artisan optimize`,
+		`sudo php artisan config:clear`,
+		`sudo php artisan cache:clear`,
 		`sudo find . -type f -exec chmod 644 {} \;`,
 		`sudo find . -type d -exec chmod 755 {} \;`,
 		`sudo chown -R www-data:www-data .`,

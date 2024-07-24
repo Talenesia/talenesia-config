@@ -51,9 +51,6 @@ func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	exec := exec.Command("/bin/sh", "-c", "age -d .env.age > .env")
-	exec.Stdin = strings.NewReader("yudha123")
-
 	envs := strings.Split(envsFlag, ",")
 
 	filteredEnvs := make(map[string]string)
@@ -77,6 +74,13 @@ func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
 	err = godotenv.Write(envMap, envDest)
 	if err != nil {
 		slog.Error("error write env file", "err", err)
+		return
+	}
+
+	ex := exec.Command("/bin/sh", "-c", "php artisan config:clear")
+	err = ex.Run()
+	if err != nil {
+		slog.Error("error refresh cache file", "err", err)
 		return
 	}
 }

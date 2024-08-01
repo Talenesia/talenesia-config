@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"io"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -39,19 +40,35 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	for _, cmd := range r.ReleaseCommandList() {
-		slog.Info("start running command...", "cmd", cmd)
+	for _, cmdLabel := range r.ReleaseCommandList() {
+		slog.Info("start running command...", "cmd", cmdLabel)
 
-		cmd := exec.Command("/bin/sh", "-c", cmd)
+		cmd := exec.Command("/bin/sh", "-c", cmdLabel)
+
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			slog.Error("error executing the command", "cmd", cmd, "error", err)
+			return
+		}
+
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
+		err = cmd.Start()
+		if err != nil {
+			slog.Error("error executing the command start", "cmd", cmd, "error", err)
+			return
+		}
+
 		if passphrase != "" {
 			cmd.Stdin = strings.NewReader(passphrase)
+			io.WriteString(stdin, passphrase+"\n")
 		}
-		err := cmd.Run()
-		if err != nil {
-			slog.Error("error executing the command", "cmd", cmd, "error", err)
+
+		stdin.Close()
+
+		if err := cmd.Wait(); err != nil {
+			slog.Error("error executing the command", "cmd", cmdLabel, "error", err)
 			return
 		}
 	}

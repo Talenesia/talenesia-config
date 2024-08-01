@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -61,7 +60,6 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 		}
 
 		if passphrase != "" {
-			cmd.Stdin = strings.NewReader(passphrase)
 			io.WriteString(stdin, passphrase+"\n")
 		}
 

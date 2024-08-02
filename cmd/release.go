@@ -7,7 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -91,8 +91,14 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 			for scanner.Scan() {
 				text := scanner.Text()
 				fmt.Println(text) // Print command output
-				if strings.Contains(text, "Enter passphrase") {
-					io.WriteString(stdin, passphrase+"\n")
+				slog.Info("Passphrase prompt detected, sending passphrase")
+
+				time.Sleep(500 * time.Millisecond)
+				_, err := io.WriteString(stdin, passphrase+"\n")
+				if err != nil {
+					slog.Error("Failed to write passphrase", "error", err)
+				} else {
+					slog.Info("Passphrase sent successfully")
 				}
 			}
 		}()

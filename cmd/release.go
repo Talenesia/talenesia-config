@@ -44,8 +44,9 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 
 	for _, cmdLabel := range r.ReleaseCommandList() {
 		slog.Info("start running command...", "cmd", cmdLabel)
+		cmd := exec.Command("/bin/sh", "-c", cmdLabel)
+
 		if cmdLabel != "sudo git fetch origin main" {
-			cmd := exec.Command("/bin/sh", "-c", cmdLabel)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
@@ -57,8 +58,6 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 
 			continue
 		}
-
-		cmd := exec.Command("/bin/sh", "-c", cmdLabel)
 
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -78,15 +77,11 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		err = cmd.Start()
-		if err != nil {
-			slog.Error("error starting command", "err", err)
-			return
-		}
+		// Create a channel to signal when to close stdin
+		closeStdin := make(chan bool)
 
 		// Function to check for passphrase prompt and respond
 		go func() {
-			defer stdin.Close()
 			scanner := bufio.NewScanner(io.MultiReader(stdout, stderr))
 			for scanner.Scan() {
 				text := scanner.Text()
@@ -101,7 +96,19 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 					slog.Info("Passphrase sent successfully")
 				}
 			}
+
+			closeStdin <- true
 		}()
+
+		err = cmd.Start()
+		if err != nil {
+			slog.Error("error starting command", "err", err)
+			return
+		}
+
+		// Wait for the goroutine to finish before closing stdin
+		<-closeStdin
+		stdin.Close()
 
 		// Wait for the command to finish
 		if err := cmd.Wait(); err != nil {

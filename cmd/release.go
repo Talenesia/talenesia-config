@@ -63,9 +63,6 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
 		if passphrase != "" && usingPass {
 			go func() {
 				io.WriteString(stdin, passphrase+"\n")

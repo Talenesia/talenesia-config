@@ -41,6 +41,19 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 
 	for cmdLabel, usingPass := range r.ReleaseCommandList() {
 		slog.Info("start running command...", "cmd", cmdLabel)
+		if !usingPass {
+			cmd := exec.Command("/bin/sh", "-c", cmdLabel)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+
+			err := cmd.Run()
+			if err != nil {
+				slog.Error("error executing the command", "cmd", cmd, "error", err)
+				return
+			}
+
+			continue
+		}
 
 		cmd := exec.Command("/bin/sh", "-c", cmdLabel)
 
@@ -60,14 +73,13 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 			}()
 		}
 
-		stdin.Close()
-
 		if output, err := cmd.CombinedOutput(); err != nil {
 			slog.Error("error executing the command", "cmd", cmdLabel, "error", err)
 			return
 		} else {
 			slog.Info("result", "output", output)
 		}
+
 	}
 }
 

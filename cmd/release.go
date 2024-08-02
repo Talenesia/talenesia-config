@@ -68,7 +68,6 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 
 		if passphrase != "" && usingPass {
 			go func() {
-				stdin.Close()
 				io.WriteString(stdin, passphrase+"\n")
 			}()
 		}
@@ -80,6 +79,7 @@ func (r *Root) Release(cmd *cobra.Command, args []string) {
 			slog.Info("result", "output", output)
 		}
 
+		stdin.Close()
 	}
 }
 

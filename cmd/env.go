@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"log/slog"
+	"os"
 	"os/exec"
 	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"github.com/talenesia/router/config"
 )
 
 func (r *Root) EnvCmd() *cobra.Command {
@@ -21,15 +23,6 @@ func (r *Root) EnvCmd() *cobra.Command {
 	cmd.PersistentFlags().String("dest", "", "Environment Destination Paths (.env)")
 
 	return cmd
-}
-
-func (r *Root) EnvCommandList() []string {
-	return []string{
-		"age -d .env.age > .env",
-		"apply env",
-		"copy to talenesia web",
-		"age -p .env > .env.age",
-	}
 }
 
 func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
@@ -77,10 +70,23 @@ func (r *Root) ApplyEnv(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	ex := exec.Command("/bin/sh", "-c", "php artisan config:clear")
-	err = ex.Run()
-	if err != nil {
-		slog.Error("error refresh cache file", "err", err)
+	labels, exist := config.Conf.Commands[cmd.Use]
+	if !exist {
+		slog.Error("command does not exist")
 		return
+	}
+
+	for _, cmdLabel := range labels {
+		slog.Info("start running command...", "cmd", cmdLabel)
+		cmd := exec.Command("/bin/sh", "-c", cmdLabel)
+
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		err := cmd.Run()
+		if err != nil {
+			slog.Error("error executing the command", "cmd", cmd, "error", err)
+			return
+		}
 	}
 }
